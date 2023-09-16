@@ -1,0 +1,79 @@
+import java.io.*;
+import java.util.*;
+
+public class KeywordCounter {
+
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: java KeywordCounter <JavaFileName>");
+            return;
+        }
+
+        String fileName = args[0];
+
+        try {
+            FileReader fileReader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String line;
+            int keywordCount = 0;
+            boolean insideComment = false;
+            boolean insideString = false;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.trim();
+
+                if (!insideComment) {
+                    if (line.startsWith("/*")) {
+                        insideComment = true;
+                        if (line.endsWith("*/")) {
+                            insideComment = false;
+                        }
+                    } else if (line.startsWith("//")) {
+                        // Line comment, ignore the whole line
+                    } else {
+                        // Split the line into words
+                        String[] words = line.split("[\\s\\(\\)\\{\\}\\[\\];,=\\.\\+\\-\\*/\"'!<>]+");
+
+                        for (String word : words) {
+                            if (isKeyword(word)) {
+                                if (!insideString) {
+                                    keywordCount++;
+                                }
+                            } else if (word.startsWith("\"") && !word.endsWith("\"")) {
+                                // Keyword starts inside a string
+                                insideString = true;
+                            } else if (insideString && word.endsWith("\"")) {
+                                // Keyword ends inside a string
+                                insideString = false;
+                            }
+                        }
+                    }
+                }
+
+                if (line.endsWith("*/")) {
+                    insideComment = false;
+                }
+            }
+
+            System.out.println("Keyword count: " + keywordCount);
+
+            bufferedReader.close();
+        } catch (IOException e) {
+            System.out.println("Error reading the file: " + e.getMessage());
+        }
+    }
+
+    // A list of Java keywords
+    private static final String[] keywords = {
+        "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
+        "default", "do", "double", "else", "enum", "extends", "false", "final", "finally", "float", "for",
+        "if", "goto", "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "null",
+        "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super", "switch",
+        "synchronized", "this", "throw", "throws", "transient", "true", "try", "void", "volatile", "while"
+    };
+
+    // Function to check if a word is a Java keyword
+    private static boolean isKeyword(String word) {
+        return Arrays.asList(keywords).contains(word);
+    }
+}
