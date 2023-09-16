@@ -1,0 +1,281 @@
+import java.util.NoSuchElementException;
+
+public class TwoWayLinkedList<E> implements MyList<E> {
+    private Node<E> head;
+    private Node<E> tail;
+    private int size;
+
+    public TwoWayLinkedList() {
+    }
+
+    @Override
+    public void add(E e) {
+        Node<E> newNode = new Node<>(e);
+        if (size == 0) {
+            head = tail = newNode;
+        } else {
+            tail.next = newNode;
+            newNode.previous = tail;
+            tail = newNode;
+        }
+        size++;
+    }
+
+    @Override
+    public void add(int index, E e) {
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        Node<E> newNode = new Node<>(e);
+        if (size == 0) {
+            head = tail = newNode;
+        } else if (index == 0) {
+            newNode.next = head;
+            head.previous = newNode;
+            head = newNode;
+        } else if (index == size) {
+            tail.next = newNode;
+            newNode.previous = tail;
+            tail = newNode;
+        } else {
+            Node<E> current = head;
+            for (int i = 1; i < index; i++) {
+                current = current.next;
+            }
+            newNode.next = current.next;
+            current.next.previous = newNode;
+            current.next = newNode;
+            newNode.previous = current;
+        }
+        size++;
+    }
+
+    @Override
+    public void clear() {
+        head = tail = null;
+        size = 0;
+    }
+
+    @Override
+    public boolean contains(E e) {
+        Node<E> current = head;
+        while (current != null) {
+            if (current.element.equals(e)) {
+                return true;
+            }
+            current = current.next;
+        }
+        return false;
+    }
+
+    @Override
+    public E get(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        Node<E> current = head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+        return current.element;
+    }
+
+    @Override
+    public int indexOf(E e) {
+        Node<E> current = head;
+        int index = 0;
+        while (current != null) {
+            if (current.element.equals(e)) {
+                return index;
+            }
+            current = current.next;
+            index++;
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public int lastIndexOf(E e) {
+        Node<E> current = tail;
+        int index = size - 1;
+        while (current != null) {
+            if (current.element.equals(e)) {
+                return index;
+            }
+            current = current.previous;
+            index--;
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean remove(E e) {
+        int index = indexOf(e);
+        if (index >= 0) {
+            remove(index);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public E remove(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        Node<E> removedNode;
+
+        if (size == 1) {
+            removedNode = head;
+            head = tail = null;
+        } else if (index == 0) {
+            removedNode = head;
+            head = head.next;
+            head.previous = null;
+        } else if (index == size - 1) {
+            removedNode = tail;
+            tail = tail.previous;
+            tail.next = null;
+        } else {
+            Node<E> current = head;
+            for (int i = 0; i < index; i++) {
+                current = current.next;
+            }
+            removedNode = current;
+            current.previous.next = current.next;
+            current.next.previous = current.previous;
+        }
+
+        size--;
+        return removedNode.element;
+    }
+
+    @Override
+    public E set(int index, E e) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+
+        Node<E> current = head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+
+        E oldElement = current.element;
+        current.element = e;
+        return oldElement;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public java.util.ListIterator<E> listIterator() {
+        return new LinkedListIterator();
+    }
+
+    @Override
+    public java.util.ListIterator<E> listIterator(int index) {
+        if (index < 0 || index > size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+        return new LinkedListIterator(index);
+    }
+
+    // Nested Node class
+    private static class Node<E> {
+        E element;
+        Node<E> next;
+        Node<E> previous;
+
+        public Node(E e) {
+            element = e;
+        }
+    }
+
+    // Nested LinkedListIterator class
+    private class LinkedListIterator implements java.util.ListIterator<E> {
+        private Node<E> current;
+        private int index;
+
+        public LinkedListIterator() {
+            current = head;
+            index = 0;
+        }
+
+        public LinkedListIterator(int index) {
+            if (index < 0 || index > size) {
+                throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+            }
+            if (index == size) {
+                current = null;
+            } else {
+                current = head;
+                for (int i = 0; i < index; i++) {
+                    current = current.next;
+                }
+            }
+            this.index = index;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < size;
+        }
+
+        @Override
+        public E next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            E element = current.element;
+            current = current.next;
+            index++;
+            return element;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return index > 0;
+        }
+
+        @Override
+        public E previous() {
+            if (!hasPrevious()) {
+                throw new NoSuchElementException();
+            }
+            if (current == null) {
+                current = tail;
+            } else {
+                current = current.previous;
+            }
+            index--;
+            return current.element;
+        }
+
+        @Override
+        public int nextIndex() {
+            return index;
+        }
+
+        @Override
+        public int previousIndex() {
+            return index - 1;
+        }
+
+        @Override
+        public void remove() {
+            if (current == null) {
+                throw new IllegalStateException();
+            }
+            Node<E> toRemove =
