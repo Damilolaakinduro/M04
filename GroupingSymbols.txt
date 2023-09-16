@@ -1,0 +1,82 @@
+// GroupingSymbols.java
+import java.io.*;
+import java.util.*;
+
+public class GroupingSymbols
+{
+public static void main(String[] args) {
+
+if (args.length != 1)
+{
+System.out.println("Usage: filename");
+System.exit(0);
+}
+
+File inputFile = new File(args[0]);
+// Check if file exists
+if (!inputFile.exists()) {
+System.out.println("File does not exist!");
+System.exit(1);
+}
+
+// Create a stack
+Stack<String> charstack = new Stack<>();
+// arraylist
+ArrayList<String> symbolarray = new ArrayList<>();
+
+// addinng all symbols to collection
+Collections.addAll(symbolarray, "(", ")", "{", "}", "[", "]");
+
+try(BufferedReader bf = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile))))
+{
+String str;
+while ((str = bf.readLine()) != null)
+{
+
+for (char character : str.toCharArray())
+{
+String s = character + "";
+int sIndex = symbolarray.indexOf(s);
+
+if (sIndex == -1)
+continue;
+
+if (charstack.size() == 0)
+{
+charstack.push(s);
+}
+else
+{
+int lIndex = symbolarray.indexOf(charstack.peek());
+if (sIndex - 1 == lIndex)
+{
+charstack.pop();
+}
+
+else
+{
+if ((lIndex & 1) == 1)
+{
+System.out.println("ERROR at:" + str);
+}
+charstack.push(s);
+}
+}
+
+}
+
+}
+}
+catch (FileNotFoundException exception)
+{
+System.out.println("File not found.");
+exception.printStackTrace();
+}
+catch (IOException exception)
+{
+System.out.println("IO error.");
+exception.printStackTrace();
+}
+
+}
+}
